@@ -9,7 +9,9 @@
 
 ##### Code Snippet - Example for calling SnapToRoad
 ```java
-List<LatLng> sampleData = new ArrayList<>();
+        responseList = new ArrayList<>();
+
+        List<LatLng> sampleData = new ArrayList<>();
 
         sampleData.add(new LatLng(-35.27801,149.12958));
         sampleData.add(new LatLng(-35.28032,149.12907));
@@ -22,8 +24,25 @@ List<LatLng> sampleData = new ArrayList<>();
             @Override
             public void handleMessage(Message message){
                 String response = message.getData().getString("response");
-                Log.e("JSON DATA", response);
-                // DO WHAT YOU WANNA DO HERE
+                JsonObject jsonObject = new JsonParser().parse(response).getAsJsonObject();
+                JsonArray jsonArray = jsonObject.getAsJsonArray("snappedPoints");
+                for(JsonElement jsonObj : jsonArray){
+                    /**
+                     * CODE WHAT YOU WANNA DO WITH RESPONSE HERE
+                     * */
+                    JsonObject locationData = jsonObj.getAsJsonObject();
+                    double latitude = locationData.get("location").getAsJsonObject().get("latitude").getAsDouble();
+                    double longitude = locationData.get("location").getAsJsonObject().get("longitude").getAsDouble();
+                    responseList.add(new LatLng(latitude, longitude));
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run(){
+                        partPath = new PolylineOptions().color(getResources().getColor(R.color.colorAccent)).width(15.0f);
+                        partPath.addAll(responseList);
+                        map.addPolyline(partPath);
+                    }
+                });
             }
         }).start();
 ```
